@@ -1,18 +1,19 @@
 {
-  "name": "betul-bot",
-  "description": "Betül temalı mizah ve AI destekli Telegram bot",
-  "repository": "https://github.com/yourusername/betul_bot",
-  "keywords": ["telegram", "bot", "ai", "mizah"],
-  "buildpacks": [
-    { "url": "heroku/python" }
-  ],
+  "name": "yapayzeka-bot",
+  "description": "Telegram bot with AI responses",
+  "repository": "https://github.com/Rq7mg/Yapayzeks",
+  "stack": "heroku-24",
   "env": {
     "TOKEN": {
       "description": "Telegram bot token",
       "required": true
     },
-    "ALLOWED_USER_ID": {
-      "description": "Botun cevap vereceği tek kullanıcı ID",
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API key",
+      "required": true
+    },
+    "TARGET_USER_ID": {
+      "description": "Telegram ID to respond to",
       "required": true
     }
   }
