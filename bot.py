@@ -1,70 +1,69 @@
 import os
-from collections import deque
-import openai
+import random
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
-# ----------------------------
-# AYARLAR
-# ----------------------------
-TOKEN = os.environ.get("TOKEN")  # Telegram bot token
-OPENAI_KEY = os.environ.get("OPENAI_KEY")  # OpenAI API key
-ALLOWED_USER_ID = int(os.environ.get("ALLOWED_USER_ID", "0"))  # Cevap verilecek Telegram ID
-MEMORY_SIZE = 10  # Son mesaj sayısı, AI context için
+from transformers import pipeline
 
-openai.api_key = OPENAI_KEY
-conversation_history = deque(maxlen=MEMORY_SIZE)
+# ---------------------------
+# Ayarlar
+# ---------------------------
+TOKEN = os.environ.get("TOKEN")
+ALLOWED_USER_ID = int(os.environ.get("ALLOWED_USER_ID", "0"))
 
-# ----------------------------
-# START KOMUTU
-# ----------------------------
+# ---------------------------
+# AI pipeline (küçük model)
+# ---------------------------
+generator = pipeline('text-generation', model='distilgpt2')
+
+def generate_reply(user_message: str) -> str:
+    # mizahi, Betül temalı cevaplar üret
+    prompt = f"Betül'ün kölesi tarzında mizahi cevap ver: {user_message}"
+    result = generator(prompt, max_length=100, do_sample=True, temperature=0.8)
+    text = result[0]['generated_text']
+    # sadece prompt sonrası kısmı dön
+    reply = text[len(prompt):].strip()
+    # eğer model boş dönerse fallback
+    if not reply:
+        reply = random.choice([
+            "Betül’ün kölesi burada! 😎",
+            "Haha, bunu bekliyordun değil mi?",
+            "Beni konuşturma, mizah yapacağım şimdi! 😂"
+        ])
+    return reply
+
+# ---------------------------
+# Komutlar
+# ---------------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.from_user.id != ALLOWED_USER_ID:
-        await update.message.reply_text("🚫 Sen Betül’ün kölesi değilsin, giremezsin!")
         return
-
     await update.message.reply_text(
-        "✨ Selam! Ben Betül’ün mizah dolu kölesi! 🤖\n"
-        "🗨️ Bana mesaj at, seninle konuşurum ve Betül temalı espriler yaparım.\n"
-        "⚡ AI desteğim var, aklını karıştıracak kadar zeki ve eğlenceliyim!\n\n"
-        "Hadi mesajını yaz, başlıyoruz!"
+        "Betül’ün kölesi botu hazır! 🤖\n\n"
+        "Benle sohbet edebilirsin, mizahımı göreceksin!"
     )
 
-# ----------------------------
-# AI YANIT HANDLER
-# ----------------------------
-async def ai_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     if user_id != ALLOWED_USER_ID:
-        return  # sadece izinli kullanıcıya yanıt ver
+        return  # sadece izin verilen kişi
+    user_text = update.message.text
+    reply = generate_reply(user_text)
+    await update.message.reply_text(reply)
 
-    user_message = update.message.text
-    conversation_history.append({"role": "user", "content": user_message})
-
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": (
-                    "Sen Betül’ün mizah dolu kölesisin, esprili, eğlenceli ve zeki cevaplar veriyorsun. "
-                    "Mesajlara her zaman mizah kat, Betül’ün temasıyla bağla."
-                )}
-            ] + list(conversation_history)
-        )
-        reply_text = response.choices[0].message.content.strip()
-        conversation_history.append({"role": "assistant", "content": reply_text})
-        await update.message.reply_text(reply_text)
-    except Exception as e:
-        await update.message.reply_text(f"⚠️ Hata: {e}")
-
-# ----------------------------
-# BOT BAŞLATMA
-# ----------------------------
+# ---------------------------
+# Main
+# ---------------------------
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
+    
+    # Komutlar
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_reply))
-    print("🤖 Betül’ün mizah dolu AI botu çalışıyor...")
+    
+    # Tüm mesajları AI ile cevapla
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_chat))
+    
+    print("Bot çalışıyor...")
     app.run_polling()
 
 if __name__ == "__main__":
