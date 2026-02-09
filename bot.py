@@ -4,26 +4,27 @@ import openai
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-TOKEN = os.environ.get("TOKEN")  # Heroku Config Var olarak ekle
-OPENAI_KEY = os.environ.get("OPENAI_KEY")  # Heroku Config Var olarak ekle
-ALLOWED_USER_ID = int(os.environ.get("ALLOWED_USER_ID", 0))  # İzinli Telegram ID
+# Heroku Config Vars
+TOKEN = os.environ.get("TOKEN")
+OPENAI_KEY = os.environ.get("OPENAI_KEY")
+ALLOWED_USER_ID = int(os.environ.get("ALLOWED_USER_ID", 0))  # izinli kullanıcı ID
 
 openai.api_key = OPENAI_KEY
 
-# ----------------- /start -----------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.from_user.id != ALLOWED_USER_ID:
+    user_id = update.effective_user.id
+    if user_id != ALLOWED_USER_ID:
         return
-    await update.message.reply_text(
-        "Merhaba! Ben Betül’ün kölesiyim 🤖\nSadece senle konuşurum ve mizahımı bolca paylaşırım!"
+    await update.effective_message.reply_text(
+        "Merhaba! Ben Betül’ün kölesiyim 🤖\nSadece senle konuşurum!"
     )
 
-# ----------------- AI cevap -----------------
 async def ai_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.from_user.id != ALLOWED_USER_ID:
+    user_id = update.effective_user.id
+    if user_id != ALLOWED_USER_ID:
         return
 
-    user_text = update.message.text
+    user_text = update.effective_message.text
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -35,9 +36,8 @@ async def ai_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         answer = "Üzgünüm, bir hata oluştu 🤖"
 
-    await update.message.reply_text(answer)
+    await update.effective_message.reply_text(answer)
 
-# ----------------- Main -----------------
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
