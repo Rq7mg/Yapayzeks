@@ -12,18 +12,16 @@ TOKEN = os.environ.get("TOKEN")
 ALLOWED_USER_ID = int(os.environ.get("ALLOWED_USER_ID", "0"))
 
 # ---------------------------
-# AI pipeline (küçük model)
+# AI pipeline (TensorFlow)
 # ---------------------------
-generator = pipeline('text-generation', model='distilgpt2')
+generator = pipeline('text-generation', model='distilgpt2', framework='tf')
 
 def generate_reply(user_message: str) -> str:
-    # mizahi, Betül temalı cevaplar üret
+    # Mizahi, Betül temalı cevaplar üret
     prompt = f"Betül'ün kölesi tarzında mizahi cevap ver: {user_message}"
     result = generator(prompt, max_length=100, do_sample=True, temperature=0.8)
     text = result[0]['generated_text']
-    # sadece prompt sonrası kısmı dön
     reply = text[len(prompt):].strip()
-    # eğer model boş dönerse fallback
     if not reply:
         reply = random.choice([
             "Betül’ün kölesi burada! 😎",
