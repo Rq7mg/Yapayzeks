@@ -1,10 +1,10 @@
 {
   "name": "betul-bot",
   "description": "Betül temalı mizah ve AI destekli Telegram bot",
-  "repository": "https://github.com/kullaniciadi/betul_bot",
+  "repository": "https://github.com/yourusername/betul_bot",
   "keywords": ["telegram", "bot", "ai", "mizah"],
   "buildpacks": [
-    {"url": "heroku/python"}
+    { "url": "heroku/python" }
   ],
   "env": {
     "TOKEN": {
