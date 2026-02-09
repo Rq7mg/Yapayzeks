@@ -1,48 +1,57 @@
-# bot.py
 import os
-import openai
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from openai import OpenAI
 
-# Heroku Config Vars
-TOKEN = os.environ.get("TOKEN")
-OPENAI_KEY = os.environ.get("OPENAI_KEY")
-ALLOWED_USER_ID = int(os.environ.get("ALLOWED_USER_ID", 0))  # izinli kullanıcı ID
+# -------------------------------
+# Ayarlar
+# -------------------------------
+TOKEN = os.environ.get("TELEGRAM_TOKEN")  # Heroku Config Var
+TARGET_ID = int(os.environ.get("TARGET_ID"))  # AI'nin cevap vereceği kullanıcı/ID
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
-openai.api_key = OPENAI_KEY
+client = OpenAI(api_key=OPENAI_API_KEY)
 
+# -------------------------------
+# Komutlar
+# -------------------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if user_id != ALLOWED_USER_ID:
-        return
-    await update.effective_message.reply_text(
-        "Merhaba! Ben Betül’ün kölesiyim 🤖\nSadece senle konuşurum!"
+    await update.message.reply_text(
+        "Selam! Betül’ün kölesi olarak buradayım 😎\n"
+        "Bana mesaj at, sana AI cevaplar üreteyim!"
     )
 
+# -------------------------------
+# Mesaj işleme
+# -------------------------------
 async def ai_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if user_id != ALLOWED_USER_ID:
+    # Sadece belirlenen TARGET_ID'ye cevap verir
+    if update.message.from_user.id != TARGET_ID:
         return
 
-    user_text = update.effective_message.text
+    user_text = update.message.text
+
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": user_text}],
-            max_tokens=150,
-            temperature=0.9
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=user_text
         )
-        answer = response['choices'][0]['message']['content']
+        ai_text = response.output_text
+        await update.message.reply_text(ai_text)
+
     except Exception as e:
-        answer = "Üzgünüm, bir hata oluştu 🤖"
+        await update.message.reply_text(f"⚠️ AI cevap verirken hata: {e}")
 
-    await update.effective_message.reply_text(answer)
-
+# -------------------------------
+# Bot başlatma
+# -------------------------------
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_reply))
-    print("Bot çalışıyor...")
+
+    print("🤖 AI Telegram bot çalışıyor...")
     app.run_polling()
 
 if __name__ == "__main__":
