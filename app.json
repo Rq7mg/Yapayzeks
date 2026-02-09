@@ -1,6 +1,6 @@
 {
-  "name": "yapayzeka-bot",
-  "description": "Telegram bot with AI responses",
+  "name": "betul-kolesi-bot",
+  "description": "Mizahi AI Telegram bot, sadece belirli bir kullanıcıya cevap verir",
   "repository": "https://github.com/Rq7mg/Yapayzeks",
   "stack": "heroku-24",
   "env": {
@@ -8,12 +8,12 @@
       "description": "Telegram bot token",
       "required": true
     },
-    "OPENAI_API_KEY": {
-      "description": "OpenAI API key",
+    "TARGET_ID": {
+      "description": "Cevap verilecek Telegram kullanıcı ID",
       "required": true
     },
-    "TARGET_USER_ID": {
-      "description": "Telegram ID to respond to",
+    "OPENAI_KEY": {
+      "description": "OpenAI API key",
       "required": true
     }
   }
