@@ -7,7 +7,13 @@
     {"url": "heroku/python"}
   ],
   "env": {
-    "TOKEN": {"description": "Telegram bot token", "required": true},
-    "ALLOWED_USER_ID": {"description": "Botun cevap vereceği tek kullanıcı ID", "required": true}
+    "TOKEN": {
+      "description": "Telegram bot token",
+      "required": true
+    },
+    "ALLOWED_USER_ID": {
+      "description": "Botun cevap vereceği tek kullanıcı ID",
+      "required": true
+    }
   }
 }
