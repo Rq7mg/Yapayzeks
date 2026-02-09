@@ -1,0 +1,25 @@
+{
+  "name": "betul-bot",
+  "description": "Betül temalı mizah ve AI destekli Telegram bot",
+  "repository": "https://github.com/kullaniciadi/betul_bot",
+  "keywords": ["telegram", "bot", "ai", "gpt", "mizah"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "TOKEN": {
+      "description": "Telegram bot token",
+      "required": true
+    },
+    "OPENAI_KEY": {
+      "description": "OpenAI API key",
+      "required": true
+    },
+    "ALLOWED_USER_ID": {
+      "description": "Sadece bu ID ile bot konuşacak",
+      "required": true
+    }
+  }
+}
